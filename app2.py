@@ -145,15 +145,4 @@ def main():
         return 1
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-    logging.info("aidvb")
-    #print('came here1')
     sys.exit(main())
-
-if 10==20:
-    print("10 is less than 20")
-
-if not text.strip():
-    raise ValueError("Empty text provided")
-
-logging.info("Text provided is not empty")
