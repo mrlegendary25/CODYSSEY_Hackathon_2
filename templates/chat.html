@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Session</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='chat.css') }}">
+</head>
+<style>.ai-neuro-btn {
+    background: linear-gradient(145deg, #00ff88, #00cc66);
+    border: 2px solid #00ff88;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-left: auto;
+}
+
+.ai-neuro-btn:hover {
+    box-shadow: 0 0 25px rgba(0, 255, 136, 0.8);
+    transform: scale(1.05);
+
+}
+
+@keyframes scan {
+0% { top: -100%; }
+100% { top: 100%; }
+}
+.scanline {
+position: absolute;
+width: 100%;
+height: 2px;
+background: linear-gradient(to bottom, transparent, #00ff88 50%, transparent);
+animation: scan 3s linear infinite;
+}
+
+</style>
+<body>
+    <div class="chat-page">
+        <header class="chat-header">
+            <div class="header-left">
+                <a href="{{ url_for('dashboard') }}" class="back-btn">← Back to Dashboard</a>
+                <h1>{{ chat_session.title }}</h1>
+            </div>
+            <button class="ai-neuro-btn" onclick="analyzeChat()">AI Neuro Analytics</button>
+            <a href="{{ url_for('mediscopes') }}">
+                <button class="btn btn-outline-info" style="margin-left: 20px;">Mediscope</button>
+            </a>
+            <div class="chat-info">
+                <span>{{ chat_session.mode.title() }}</span>
+                {% if chat_session.topic %}
+                <span>| {{ chat_session.topic }}</span>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="chat-messages" id="chatMessages">
+                {% for message in messages %}
+                <div class="message {{ 'user-message' if message.is_user else 'bot-message' }}">
+                    {{ message.full_message }}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="chat-input">
+                <textarea id="messageInput" placeholder="Type your message..."></textarea>
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CHAT_SESSION_ID = '{{ chat_session.id }}';
+    </script>
+    <script src="{{ url_for('static', filename='chat.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mental Health Support - Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>Mental Health Support Dashboard</h1>
+            <div class="user-info">
+                <span>{{ session['user']['name'] }}</span>
+                <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <div class="new-chat-section">
+                <h2>Start New Chat</h2>
+                <div class="chat-options">
+                    <button onclick="startNewChat('general')" class="option-btn">
+                        <h3>General Chat</h3>
+                        <p>Talk freely about anything on your mind</p>
+                    </button>
+                    <button onclick="showTopicSelection()" class="option-btn">
+                        <h3>Topic-Specific Chat</h3>
+                        <p>Discuss specific mental health topics</p>
+                    </button>
+                    <button onclick="startNewChat('diagnosis')" class="option-btn">
+                        <h3>Symptom Assessment</h3>
+                        <p>Discuss and understand your symptoms</p>
+                    </button>
+                </div>
+
+                <div id="topicSelection" class="topic-selection" style="display: none;">
+                    <h3>Choose a Topic</h3>
+                    <select id="topicSelect">
+                        <option value="anxiety">Anxiety</option>
+                        <option value="depression">Depression</option>
+                        <option value="relationships">Relationship Issues</option>
+                        <option value="stress">Stress Management</option>
+                        <option value="self-esteem">Self-Esteem</option>
+                    </select>
+                    <button onclick="startNewChat('topic')" class="primary-btn">Start Chat</button>
+                </div>
+            </div>
+
+            <div class="chat-history-section">
+                <h2>Chat History</h2>
+                <div class="chat-list" id="chatList">
+                    {% for chat in chats %}
+                    <!-- <div class="chat-item" onclick="openChat('{{ chat.id }}')">
+                        <div class="chat-info">
+                            <h3>{{ chat.title }}</h3>
+                            <p>{{ chat.mode.title() }} {% if chat.topic %}| {{ chat.topic }}{% endif %}</p>
+                        </div>
+                        <div class="chat-meta">
+                            <span class="chat-date">
+                                {% if chat.last_message_time %}
+                                    {{ chat.last_message_time.strftime('%Y-%m-%d %H:%M') }}
+                                {% endif %}
+                            </span>
+                            <button onclick="deleteChat('{{ chat.id }}', event)" class="delete-btn">Delete</button>
+                        </div> -->
+                        <div class="chat-item" onclick="openChat('{{ chat.id }}')">
+                            <div class="chat-info">
+                                <h3>{{ chat.title }}</h3>
+                                <p>{{ chat.mode.title() }} {% if chat.topic %}| {{ chat.topic }}{% endif %}</p>
+                            </div>
+                            <div class="chat-meta">
+                                <span class="chat-date">
+                                    {% if chat.last_message_time %}
+                                        {{ chat.last_message_time.strftime('%Y-%m-%d %H:%M') }}
+                                    {% endif %}
+                                </span>
+                                <button onclick="showGraphs('{{ chat.id }}', event)" class="graph-btn">
+                                    <span class="btn-text">Show Graphs</span>
+                                    <div class="loading-spinner" style="display: none;"></div>
+                                </button>
+                                <button onclick="deleteChat('{{ chat.id }}', event)" class="delete-btn">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+    
+    
+    <div id="graphModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Emotion Analysis Graphs</h2>
+            <div class="graphs-container">
+                <div class="graph-section">
+                    <h3>GoEmotions Analysis</h3>
+                    <canvas id="goEmotionsGraph"></canvas>
+                </div>
+                <div class="graph-section">
+                    <h3>Ekman Emotions Analysis</h3>
+                    <canvas id="ekmanGraph"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

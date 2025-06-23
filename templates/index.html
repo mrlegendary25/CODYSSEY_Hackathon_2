@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mental Health Support Chat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="mode-selection" id="modeSelection">
+            <h1>Mental Health Support Chat</h1>
+            <div class="mode-buttons">
+                <button onclick="startChat('chat')">Chat to Feel Better</button>
+                <button onclick="showTopicSelection()">Choose a Topic</button>
+                <button onclick="startChat('diagnosis')">Get a Diagnosis</button>
+            </div>
+            
+            <div class="topic-selection" id="topicSelection" style="display: none;">
+                <h2>Choose a Topic</h2>
+                <select id="topicSelect">
+                    <option value="anxiety">Anxiety</option>
+                    <option value="depression">Depression</option>
+                    <option value="relationships">Relationship Issues</option>
+                    <option value="stress">Stress Management</option>
+                    <option value="self-esteem">Self-Esteem</option>
+                </select>
+                <button onclick="startTopicChat()">Start Chat</button>
+            </div>
+        </div>
+
+        <div class="chat-container" id="chatContainer" style="display: none;">
+            <div class="chat-messages" id="chatMessages"></div>
+            
+            <div class="chat-input">
+                <textarea id="messageInput" placeholder="Type your message..."></textarea>
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

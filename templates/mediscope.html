@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Symptom Checker</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='mediscope.css') }}">
+</head>
+<body>
+    <h2>Disease Predictor</h2>
+
+    <div class="container">
+        <div class="symptom-container">
+            <button class="button" onclick="getPrediction()">Predict Disease</button>
+            <div id="loading">Processing...</div>
+        </div>
+
+        <div class="results" id="results"></div>
+    </div>
+
+    <script>
+        async function getPrediction() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').innerHTML = '';
+
+            try {
+                // First fetch the symptoms data
+                const symptomsResponse = await fetch('/static/symptoms_data.json', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                
+                if (!symptomsResponse.ok) {
+                    throw new Error('Failed to fetch symptoms data');
+                }
+
+                const symptomsText = await symptomsResponse.text();
+                const symptomsData = JSON.parse(symptomsText);
+                
+                console.log('Symptoms data:', symptomsData);
+
+                // Then send to prediction endpoint
+                const predictionResponse = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        symptoms: symptomsData.symptoms_binary
+                    })
+                });
+
+                if (!predictionResponse.ok) {
+                    throw new Error(`HTTP error! status: ${predictionResponse.status}`);
+                }
+
+                const data = await predictionResponse.json();
+                console.log('Prediction response:', data);
+
+                if (!data || !data.predictions) {
+                    throw new Error('Invalid response format: missing predictions');
+                }
+
+                const resultsDiv = document.getElementById('results');
+                let resultHTML = `
+                    <h3>Diagnosis Results</h3>
+                    <div class="selected-symptoms">
+                        <h4>Selected Symptoms:</h4>
+                        <ul>${symptomsData.detected_symptoms.map(s => `<li>${s}</li>`).join('')}</ul>
+                    </div>
+                    <h4>Top Predictions:</h4>
+                `;
+
+                data.predictions.forEach((pred, index) => {
+                    resultHTML += `
+                        <div class="prediction-item">
+                            <strong>Prediction ${index + 1}:</strong> ${pred.disease}
+                            <div class="probability-bar">
+                                <div class="probability-fill" style="width: ${pred.probability * 100}%"></div>
+                            </div>
+                            <small>Probability: ${(pred.probability * 100).toFixed(2)}%</small>
+                        </div>
+                    `;
+                });
+
+                if (data.extra_prediction) {
+                    resultHTML += `
+                        <div class="extra-prediction">
+                            <h4>Additional Possibility:</h4>
+                            <div class="prediction-item">
+                                <strong>${data.extra_prediction.disease}</strong>
+                                <div class="probability-bar">
+                                    <div class="probability-fill" style="width: ${data.extra_prediction.probability * 100}%"></div>
+                                </div>
+                                <small>Probability: ${(data.extra_prediction.probability * 100).toFixed(2)}%</small>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                resultHTML += `<div class="medicines-section">
+                    <h4>Recommended Medicines:</h4>`;
+
+                data.medicines.main.forEach(item => {
+                    resultHTML += `
+                        <div class="medicine-item">
+                            <strong>${item.disease}:</strong>
+                            <ul class="medicine-list">
+                                ${item.medications.map(med => `<li>${med}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                });
+
+                if (data.medicines.extra.length > 0) {
+                    resultHTML += `<h4>Alternative Medicines:</h4>`;
+                    data.medicines.extra.forEach(item => {
+                        resultHTML += `
+                            <div class="medicine-item">
+                                <strong>${item.disease}:</strong>
+                                <ul class="medicine-list">
+                                    ${item.medications.map(med => `<li>${med}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `;
+                    });
+                }
+                resultHTML += `</div>`;
+
+                if (Object.keys(data.side_effects).length > 0) {
+                    resultHTML += `
+                        <div class="side-effects">
+                            <h4>Potential Side Effects:</h4>
+                            ${Object.entries(data.side_effects).map(([medicine, effects]) => `
+                                <div class="medicine-item">
+                                    <strong>${medicine}:</strong>
+                                    <p>${effects}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                if (Object.keys(data.interactions).length > 0) {
+                    resultHTML += `
+                        <div class="interactions">
+                            <h4>Drug Interactions:</h4>
+                            ${Object.entries(data.interactions).map(([key, info]) => {
+                                const riskClass = info.risk_level?.toLowerCase() === 'high' ? 'risk-high' :
+                                    info.risk_level?.toLowerCase() === 'moderate' ? 'risk-moderate' : 'risk-low';
+                                return `
+                                    <div class="interaction-item">
+                                        <strong>${info.drug_a} + ${info.drug_b}</strong>
+                                        <p class="${riskClass}">Risk Level: ${info.risk_level}</p>
+                                        <p>${info.interaction}</p>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
+                }
+
+                resultsDiv.innerHTML = resultHTML;
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = `
+                    <h3>Error:</h3>
+                    <p>There was an error making the prediction. Please try again.</p>
+                    <p>Error details: ${error.message}</p>
+                `;
+                console.error('Error details:', error);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
