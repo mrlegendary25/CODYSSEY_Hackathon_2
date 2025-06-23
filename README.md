@@ -44,5 +44,5 @@ The healthcare industry produces vast amounts of medical data daily. Yet, integr
 
 ## 🔗 Demo / Implementation
 
-🔗 [View the implementation](https://lnkd.in/gWsVYWJt)
+🔗 [View the implementation](https://www.youtube.com/watch?v=7oAjnXZ_jBw)
 
